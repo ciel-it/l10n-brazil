@@ -144,6 +144,7 @@ class AccountTax(models.Model):
             price_unit, quantity, product, partner, force_excluded)
         totaldc = icms_value = 0.0
         ipi_value = 0.0
+        ipi_add_base_icms = 0.00
         calculed_taxes = []
         for tax in result['taxes']:
             tax_list = [tx for tx in taxes if tx.id == tax['id']]
@@ -157,6 +158,7 @@ class AccountTax(models.Model):
             tax['tax_discount'] = tax_brw.base_code_id.tax_discount
             tax['account_deduced_id'] = tax_brw.account_deduced_id.id
             tax['account_paid_deduced_id'] = tax_brw.account_paid_deduced_id.id
+            tax['include_base_amount'] = tax_brw.include_base_amount
 
         common_taxes = [tx for tx in result['taxes'] if tx['domain'] not in ['icms', 'icmsst', 'ipi', 'icmsinter', 'icmsfcp', 'icmsintra']]
         result_tax = self._compute_tax(cr, uid, common_taxes, result['total'],
@@ -172,6 +174,8 @@ class AccountTax(models.Model):
         calculed_taxes += result_ipi['taxes']
         for ipi in result_ipi['taxes']:
             ipi_value += ipi['amount']
+            if result_ipi['taxes'][0]['include_base_amount']:
+                ipi_add_base_icms += ipi['amount']
 
         difa = {}
         if consumidor and consumidor == '1':
@@ -233,7 +237,7 @@ class AccountTax(models.Model):
         # Calcula ICMS
         specific_icms = [tx for tx in result['taxes'] if tx['domain'] == 'icms']
         result_icms = self._compute_tax(cr, uid,
-            specific_icms, total_base, product, quantity, precision)
+            specific_icms, total_base+ipi_add_base_icms, product, quantity, precision)
         totaldc += result_icms['tax_discount']
         calculed_taxes += result_icms['taxes']
         if result_icms['taxes']:

@@ -398,6 +398,12 @@ class NFe200(FiscalDocument):
 
             # IPI
             self.det.imposto.IPI.CST.valor = inv_line.ipi_cst_id.code
+
+            # RAFAEL PETRELLA - CIEL IT - 08/09/2016
+            # Ajuste para atender Simples Nacional
+            if inv_line.ipi_cst_id.code == "55":
+                self.det.imposto.IPI.cEnq.valor = "109"
+
             if inv_line.ipi_type == 'percent' or '':
                 self.det.imposto.IPI.vBC.valor = str("%.2f" % inv_line.ipi_base)
                 self.det.imposto.IPI.pIPI.valor = str("%.2f" % inv_line.ipi_percent)
