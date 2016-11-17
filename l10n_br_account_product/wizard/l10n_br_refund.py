@@ -27,52 +27,23 @@ OPERATION_TYPE = {
     'in_refund': 'input'
 }
 
+
 class account_invoice_refund(orm.TransientModel):
-
-    def _default_fiscal_category(self, cr, uid, context=None):
-
-        DEFAULT_FCATEGORY_PRODUCT = {
-            'out_invoice': 'out_refund_fiscal_category_id',
-            'in_invoice': 'in_refund_fiscal_category_id',
-        }
-
-        default_fo_category = {
-           'product': DEFAULT_FCATEGORY_PRODUCT,
-        }
-
-        invoice_type = context.get('type', 'out_invoice')
-        invoice_fiscal_type = context.get('fiscal_type', 'product')
-
-        user = self.pool.get('res.users').browse(cr, uid, uid, context=context)
-        fcategory = self.pool.get('res.company').read(
-            cr, uid, user.company_id.id,
-            [default_fo_category[invoice_fiscal_type][invoice_type]],
-            context=context)[default_fo_category[invoice_fiscal_type][
-                invoice_type]]
-
-        return fcategory and fcategory[0] or False
-
     _inherit = "account.invoice.refund"
     _columns = {
         'fiscal_category_id': fields.many2one(
             'l10n_br_account.fiscal.category', 'Categoria Fiscal',
             domain="[('journal_type', '=', 'sale_refund'), ('fiscal_type', '=', 'product')]", required=True),
     }
-    
-    _defaults = {
-        'fiscal_category_id': _default_fiscal_category,
-    }
 
 
     def compute_refund(self, cr, uid, ids, mode='refund', context=None):
-
         inv_obj = self.pool.get('account.invoice')
         line_obj = self.pool.get('account.invoice.line')
         if not context:
             context = {}
 
         for send_invoice in inv_obj.browse(cr, uid, context.get('active_ids'), context):
-
             fiscal_category_id = send_invoice.fiscal_category_id.refund_fiscal_category_id.id
 
             res = super(account_invoice_refund, self).compute_refund(cr, uid, ids, mode, context)
@@ -82,7 +53,7 @@ class account_invoice_refund(orm.TransientModel):
             invoice_ids = ids_domain[2]
 
             for invoice in inv_obj.browse(cr, uid, invoice_ids, context=context):
-                
+
                 line_ids = line_obj.search(cr, uid, [('invoice_id', '=', invoice.id)])
                 payment_term = invoice.payment_term and invoice.payment_term.id or False
                 bank = invoice.partner_bank_id and invoice.partner_bank_id.id or False
@@ -103,7 +74,7 @@ class account_invoice_refund(orm.TransientModel):
                     if 'invoice_line_tax_id' in line_onchange['value']:
                         taxes = line_onchange['value']['invoice_line_tax_id']
                         line_onchange['value']['invoice_line_tax_id'] = [[6, 0, taxes]]
-                        
+
                     line_obj.write(cr, uid, line_ids[idx],line_onchange['value'],context)
                 inv_obj.write(cr, uid, [invoice.id], onchange['value'], context=context)
             return res

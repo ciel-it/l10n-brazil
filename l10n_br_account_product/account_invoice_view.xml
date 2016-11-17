@@ -530,11 +530,11 @@
 		</record>
 
 		<record id="account.action_invoice_tree3" model="ir.actions.act_window">
-			<field name="domain">[('type', '=', 'out_refund'), ('fiscal_type', '=', 'product')]</field>
+			<field name="domain">[('type', '=', 'out_refund'), ('fiscal_type', 'in', ('product', 'service'))]</field>
 		</record>
 
 		<record id="account.action_invoice_tree4" model="ir.actions.act_window">
-			<field name="domain">[('type', '=', 'in_refund'), ('fiscal_type', '=', 'product')]</field>
+			<field name="domain">[('type', '=', 'in_refund'), ('fiscal_type', 'in', ('product', 'service'))]</field>
 		</record>
 
 		<record id="account.action_invoice_tree_pending_invoice" model="ir.actions.act_window">
