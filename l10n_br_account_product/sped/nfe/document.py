@@ -404,6 +404,12 @@ class NFe200(FiscalDocument):
             if inv_line.ipi_cst_id.code == "55":
                 self.det.imposto.IPI.cEnq.valor = "109"
 
+            # RAFAEL PETRELLA - CIEL IT - 18/10/2016
+            # Ajuste para atender amostra gratis
+            if inv_line.cfop_id.code == "6911" or inv_line.cfop_id.code == "5911":
+                if inv_line.ipi_cst_id.code == "52":
+                    self.det.imposto.IPI.cEnq.valor = "303"
+
             if inv_line.ipi_type == 'percent' or '':
                 self.det.imposto.IPI.vBC.valor = str("%.2f" % inv_line.ipi_base)
                 self.det.imposto.IPI.pIPI.valor = str("%.2f" % inv_line.ipi_percent)

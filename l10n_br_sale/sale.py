@@ -336,10 +336,44 @@ class SaleOrderLine(orm.Model):
 
     @api.model
     def _fiscal_position_map(self, result, **kwargs):
-        ctx = dict(self._context)
-        ctx.update({'use_domain': ('use_sale', '=', True)})
-        return self.env['account.fiscal.position.rule'].with_context(
-            ctx).apply_fiscal_mapping(result, **kwargs)
+
+	# RAFAEL PETRELLA - 24/11/2016 - BUG IMPOSTOS NO PEDIDO
+	# CODIGO RETIRADO DA VERSÃO OCA
+        context = dict(self.env.context)
+        context.update({'use_domain': ('use_sale', '=', True)})
+        fp_rule_obj = self.env['account.fiscal.position.rule']
+
+        partner_invoice = self.env['res.partner'].browse(
+            kwargs.get('partner_invoice_id'))
+
+        product_fc_id = fp_rule_obj.with_context(
+            context).product_fiscal_category_map(
+                kwargs.get('product_id'),
+                kwargs.get('fiscal_category_id'))
+
+        if product_fc_id:
+            kwargs['fiscal_category_id'] = product_fc_id
+
+        result['value']['fiscal_category_id'] = kwargs.get(
+            'fiscal_category_id')
+
+        result.update(fp_rule_obj.with_context(context).apply_fiscal_mapping(
+            result, **kwargs))
+        fiscal_position = result['value'].get('fiscal_position')
+        product_id = kwargs.get('product_id')
+
+        if product_id and fiscal_position:
+            obj_fposition = self.env['account.fiscal.position'].browse(
+                fiscal_position)
+            obj_product = self.env['product.product'].browse(product_id)
+            context.update({
+                'fiscal_type': obj_product.fiscal_type,
+                'type_tax_use': 'sale', 'product_id': product_id})
+            taxes = obj_product.taxes_id
+            tax_ids = obj_fposition.with_context(context).map_tax(taxes)
+            result['value']['tax_id'] = tax_ids
+
+        return result
 
     def product_id_change(self, cr, uid, ids, pricelist, product, qty=0,
                           uom=False, qty_uos=0, uos=False, name='',
@@ -365,7 +399,8 @@ class SaleOrderLine(orm.Model):
                 'partner_id': partner_id,
                 'partner_invoice_id': partner_invoice_id,
                 'fiscal_category_id': parent_fiscal_category_id,
-                'context': context
+                'context': context,
+                'product_id': product # RAFAEL PETRELLA - 24/11/2016 - BUG IMPOSTOS NO PEDIDO
             }
             result.update(self._fiscal_position_map(cr, uid, result, **kwargs))
             if result['value'].get('fiscal_position'):
@@ -383,6 +418,7 @@ class SaleOrderLine(orm.Model):
             partner_id, lang, update_tax, date_order, packaging,
             fiscal_position, flag, context)
         result_super['value'].update(result['value'])
+
         return result_super
 
     @api.multi
@@ -402,7 +438,8 @@ class SaleOrderLine(orm.Model):
             'partner_invoice_id': partner_invoice_id,
             'fiscal_category_id': fiscal_category_id,
             'company_id': company_id,
-            'context': context
+            'context': context,
+            'product_id': product_id # RAFAEL PETRELLA - 24/11/2016 - BUG IMPOSTOS NO PEDIDO
         }
 
         result = self._fiscal_position_map(result, **kwargs)
@@ -423,7 +460,8 @@ class SaleOrderLine(orm.Model):
             'partner_invoice_id': partner_invoice_id,
             'fiscal_category_id': fiscal_category_id,
             'company_id': company_id,
-            'context': {}
+            'context': {},
+            'product_id': product_id # RAFAEL PETRELLA - 24/11/2016 - BUG IMPOSTOS NO PEDIDO
         }
 
         if not fiscal_position:
