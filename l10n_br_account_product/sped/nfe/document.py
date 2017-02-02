@@ -330,7 +330,9 @@ class NFe200(FiscalDocument):
         self.det.nItem.valor = i
         self.det.prod.cProd.valor = inv_line.product_id.code or ''
         self.det.prod.cEAN.valor = inv_line.product_id.ean13 or ''
-        self.det.prod.xProd.valor = inv_line.product_id.name[:120] or ''
+        # RAFAEL PETRELLA - 05/01/2017 - alterado para atender cliente CR FACAS
+        # self.det.prod.xProd.valor = inv_line.product_id.name[:120] or ''
+        self.det.prod.xProd.valor = inv_line.name[:120] or ''
         self.det.prod.NCM.valor = re.sub('[%s]' % re.escape(string.punctuation), '', inv_line.fiscal_classification_id.name or '')[:8]
         self.det.prod.CEST.valor = re.sub('[^0-9]', '', inv_line.cest or '')
         self.det.prod.EXTIPI.valor = ''
@@ -410,6 +412,12 @@ class NFe200(FiscalDocument):
                 if inv_line.ipi_cst_id.code == "52":
                     self.det.imposto.IPI.cEnq.valor = "303"
 
+            # RAFAEL PETRELLA - CIEL IT - 12/01/2016
+            # Ajuste para atender Manaus (Zona Franca)
+            if inv_line.cfop_id.code == "6109":
+                if inv_line.ipi_cst_id.code == "53":
+                    self.det.imposto.IPI.cEnq.valor = "336"
+
             if inv_line.ipi_type == 'percent' or '':
                 self.det.imposto.IPI.vBC.valor = str("%.2f" % inv_line.ipi_base)
                 self.det.imposto.IPI.pIPI.valor = str("%.2f" % inv_line.ipi_percent)
@@ -488,22 +496,27 @@ class NFe200(FiscalDocument):
         # Dados da Transportadora e veiculo relacionados ao módulo delivery
         #
 
-        self.nfe.infNFe.transp.modFrete.valor = inv.incoterm and inv.incoterm.freight_responsibility or '9'
+	# Rafael Petrella - 24/01/2017
+	# Correção Tipo de Frete
+        # self.nfe.infNFe.transp.modFrete.valor = inv.incoterm and inv.incoterm.freight_responsibility or '9'
+        self.nfe.infNFe.transp.modFrete.valor = inv.freight_responsibility or '9'
 
-        if inv.carrier_id:
+	# Rafael Petrella - 24/01/2017
+	# Ajuste Transportadora
+        if inv.partner_carrier_id:
 
-            if inv.carrier_id.partner_id.is_company:
+            if inv.partner_carrier_id.partner_id.is_company:
                 self.nfe.infNFe.transp.transporta.CNPJ.valor = \
-                    re.sub('[%s]' % re.escape(string.punctuation), '', inv.carrier_id.partner_id.cnpj_cpf or '')
+                    re.sub('[%s]' % re.escape(string.punctuation), '', inv.partner_carrier_id.partner_id.cnpj_cpf or '')
             else:
                 self.nfe.infNFe.transp.transporta.CPF.valor = \
-                    re.sub('[%s]' % re.escape(string.punctuation), '', inv.carrier_id.partner_id.cnpj_cpf or '')
+                    re.sub('[%s]' % re.escape(string.punctuation), '', inv.partner_carrier_id.partner_id.cnpj_cpf or '')
 
-            self.nfe.infNFe.transp.transporta.xNome.valor = inv.carrier_id.partner_id.legal_name[:60] or ''
-            self.nfe.infNFe.transp.transporta.IE.valor = inv.carrier_id.partner_id.inscr_est or ''
-            self.nfe.infNFe.transp.transporta.xEnder.valor = inv.carrier_id.partner_id.street or ''
-            self.nfe.infNFe.transp.transporta.xMun.valor = inv.carrier_id.partner_id.l10n_br_city_id.name or ''
-            self.nfe.infNFe.transp.transporta.UF.valor = inv.carrier_id.partner_id.state_id.code or ''
+            self.nfe.infNFe.transp.transporta.xNome.valor = inv.partner_carrier_id.partner_id.legal_name[:60] or ''
+            self.nfe.infNFe.transp.transporta.IE.valor = inv.partner_carrier_id.partner_id.inscr_est or ''
+            self.nfe.infNFe.transp.transporta.xEnder.valor = inv.partner_carrier_id.partner_id.street or ''
+            self.nfe.infNFe.transp.transporta.xMun.valor = inv.partner_carrier_id.partner_id.l10n_br_city_id.name or ''
+            self.nfe.infNFe.transp.transporta.UF.valor = inv.partner_carrier_id.partner_id.state_id.code or ''
 
         if inv.vehicle_id:
             self.nfe.infNFe.transp.veicTransp.placa.valor = inv.vehicle_id.plate or ''

@@ -199,6 +199,11 @@ class AccountTax(models.Model):
             specific_icms_fcp = [tx for tx in result['taxes']
                                  if tx['domain'] == 'icmsfcp']
 
+            # RAFAEL PETRELLA - 01/02/2017
+            # Ajuste para atender simples nacional 
+            if tax_list[0].company_id.fiscal_type != '3':
+                total_base = 0.00
+
             if specific_icms_inter and specific_icms_intra:
                 result_icms_inter = self._compute_tax(
                     cr, uid, specific_icms_inter, total_base,
@@ -211,7 +216,7 @@ class AccountTax(models.Model):
                 difa['vBCUFDest'] = total_base
                 # ICMS origem = [BC x ALQ INTER]
                 difa['pICMSUFDest'] = specific_icms_intra[0]['percent']
-                difa['pICMSInterPart'] = 0.40
+                difa['pICMSInterPart'] = 0.60
                 # ICMS interno Destino = [BC x ALQ intra]
                 difa['pICMSInter'] = specific_icms_inter[0]['percent']
                 # ICMS destino = [BC x ALQ intra] - ICMS origem

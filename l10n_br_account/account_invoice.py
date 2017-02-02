@@ -202,8 +202,8 @@ class AccountInvoice(models.Model):
 
             if context.get('fiscal_type', False):
                 delivery_infos = eview.xpath("//group[@name='delivery_info']")
-                for delivery_info in delivery_infos:
-                    delivery_info.set('invisible', '1')
+                #for delivery_info in delivery_infos:
+                #    delivery_info.set('invisible', '1')
 
             result['arch'] = etree.tostring(eview)
 

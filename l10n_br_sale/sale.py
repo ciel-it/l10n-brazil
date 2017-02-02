@@ -22,6 +22,9 @@ from openerp.osv import orm, fields
 from openerp.addons import decimal_precision as dp
 from openerp import api, _
 
+import logging
+_logger = logging.getLogger(__name__)
+
 class SaleOrder(orm.Model):
     _inherit = 'sale.order'
 
@@ -339,6 +342,9 @@ class SaleOrderLine(orm.Model):
 
 	# RAFAEL PETRELLA - 24/11/2016 - BUG IMPOSTOS NO PEDIDO
 	# CODIGO RETIRADO DA VERSÃO OCA
+	kwargs.update({'company_id': 1})
+	_logger.info("_fiscal_position_map" )
+        _logger.info(kwargs)
         context = dict(self.env.context)
         context.update({'use_domain': ('use_sale', '=', True)})
         fp_rule_obj = self.env['account.fiscal.position.rule']
