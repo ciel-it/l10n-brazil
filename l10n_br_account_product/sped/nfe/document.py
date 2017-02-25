@@ -27,7 +27,6 @@ from openerp.osv import orm
 from openerp.tools.translate import _
 from openerp.addons.l10n_br_account.sped.document import FiscalDocument
 
-
 class NFe200(FiscalDocument):
 
     def __init__(self):
@@ -134,6 +133,8 @@ class NFe200(FiscalDocument):
         self.nfe.infNFe.ide.cUF.valor = company.state_id and company.state_id.ibge_code or ''
         self.nfe.infNFe.ide.cNF.valor = inv.nfe_code
         self.nfe.infNFe.ide.natOp.valor = inv.fiscal_category_id.name or ''
+        # RAFAEL PETRELLA - 10-02-17 - Ajuste para Natureza de Operação (DESCRIÇÃO)
+        # self.nfe.infNFe.ide.natOp.valor = inv_line.cfop_id.small_name
         self.nfe.infNFe.ide.indPag.valor = inv.payment_term and inv.payment_term.indPag or '2'
         self.nfe.infNFe.ide.mod.valor  = inv.fiscal_document_id.code or ''
         self.nfe.infNFe.ide.serie.valor = inv.document_serie_id.code or ''
@@ -303,6 +304,7 @@ class NFe200(FiscalDocument):
                 self.nfe.infNFe.dest.indIEDest.valor = '9'
             else:
                 self.nfe.infNFe.dest.indIEDest.valor = '2'
+            self.nfe.infNFe.dest.ISUF.valor = re.sub('[%s]' % re.escape(string.punctuation), '', inv.partner_id.suframa or '')
         else:
             self.nfe.infNFe.dest.CPF.valor = re.sub('[%s]' % re.escape(string.punctuation), '', inv.partner_id.cnpj_cpf or '')
             self.nfe.infNFe.dest.indIEDest.valor = '9'
@@ -350,7 +352,12 @@ class NFe200(FiscalDocument):
         self.det.prod.vSeg.valor = str("%.2f" % inv_line.insurance_value)
         self.det.prod.vDesc.valor = str("%.2f" % inv_line.discount_value)
         self.det.prod.vOutro.valor = str("%.2f" % inv_line.other_costs_value)
-        self.det.imposto.vTotTrib.valor = str("%.2f" % total_tax)
+
+        # RAFAEL PETRELLA - 10-02-17 - Ajuste para Natureza de Operação (DESCRIÇÃO)
+        self.nfe.infNFe.ide.natOp.valor = inv_line.cfop_id.small_name
+
+        # RAFAEL PETRELLA - 9-02-17 - Ajuste para permitir Desoneração ICMS negativo
+        self.det.imposto.vTotTrib.valor = str("%.2f" % abs(total_tax))
         #
         # Produto entra no total da NF-e
         #
@@ -397,6 +404,11 @@ class NFe200(FiscalDocument):
                 self.det.imposto.ICMSUFDest.vFCPUFDest.valor = str("%.2f" % inv_line.vFCPUFDest)
                 self.det.imposto.ICMSUFDest.vICMSUFDest.valor = str("%.2f" % inv_line.vICMSUFDest)
                 self.det.imposto.ICMSUFDest.vICMSUFRemet.valor = str("%.2f" % inv_line.vICMSUFRemet)
+
+            if inv_line.icms_cst_id.code == "40" and \
+               total_tax < 0.00:
+                self.det.imposto.ICMS.vICMSDeson.valor = str("%.2f" % abs(total_tax))
+                self.det.imposto.ICMS.motDesICMS.valor = 7
 
             # IPI
             self.det.imposto.IPI.CST.valor = inv_line.ipi_cst_id.code
@@ -464,7 +476,6 @@ class NFe200(FiscalDocument):
         self.det.imposto.COFINSST.qBCProd.valor = ''
         self.det.imposto.COFINSST.vAliqProd.valor = ''
         self.det.imposto.COFINSST.vCOFINS.valor = str("%.2f" % inv_line.cofins_st_value)
-
 
     def _di(self, cr, uid, ids, inv, inv_line, inv_di, i, context=None):
         self.di.nDI.valor = inv_di.name
@@ -580,6 +591,10 @@ class NFe200(FiscalDocument):
                         inv.vICMSUFRemet, inv.vICMSUFDest, inv.vFCPUFDest)
             self.nfe.infNFe.infAdic.infCpl.valor = self.nfe.infNFe.infAdic.infCpl.valor + info
 
+        if self.nfe.infNFe.dest.ISUF.valor:
+            info = u' * Inscrição Suframa - ' + self.nfe.infNFe.dest.ISUF.valor
+            self.nfe.infNFe.infAdic.infCpl.valor = self.nfe.infNFe.infAdic.infCpl.valor + info
+
         self.nfe.infNFe.infAdic.infAdFisco.valor = inv.fiscal_comment or ''
         self.nfe.infNFe.infAdic.infCpl.valor = self.nfe.infNFe.infAdic.infCpl.valor + (inv.comment or '')
 
@@ -592,6 +607,12 @@ class NFe200(FiscalDocument):
         self.nfe.infNFe.total.ICMSTot.vICMS.valor = str("%.2f" % inv.icms_value)
         self.nfe.infNFe.total.ICMSTot.vFCPUFDest.valor = str("%.2f" % inv.vFCPUFDest)
         self.nfe.infNFe.total.ICMSTot.vICMSUFDest.valor = str("%.2f" % inv.vICMSUFDest)
+
+        # RAFAEL PETRELLA - 09-02-2017 - ICMSDEson - Venda Manaus - UNICAB
+        if self.nfe.infNFe.dest.enderDest.UF.valor == "AM" and \
+           total_tax < 0.00:
+            self.nfe.infNFe.total.ICMSTot.vICMSDeson.valor = str("%.2f" % abs(total_tax))
+
         self.nfe.infNFe.total.ICMSTot.vICMSUFRemet.valor = str("%.2f" % inv.vICMSUFRemet)
         self.nfe.infNFe.total.ICMSTot.vBCST.valor = str("%.2f" % inv.icms_st_base)
         self.nfe.infNFe.total.ICMSTot.vST.valor = str("%.2f" % inv.icms_st_value)
@@ -605,7 +626,8 @@ class NFe200(FiscalDocument):
         self.nfe.infNFe.total.ICMSTot.vCOFINS.valor = str("%.2f" % inv.cofins_value)
         self.nfe.infNFe.total.ICMSTot.vOutro.valor = str("%.2f" % inv.amount_costs)
         self.nfe.infNFe.total.ICMSTot.vNF.valor = str("%.2f" % inv.amount_total)
-        self.nfe.infNFe.total.ICMSTot.vTotTrib.valor = str("%.2f" % total_tax)
+        # RAFAEL PETRELLA - 9-02-17 - Ajuste para permitir Desoneração ICMS negativo
+        self.nfe.infNFe.total.ICMSTot.vTotTrib.valor = str("%.2f" % abs(total_tax))
 
     def _export(self, cr, uid, ids, invoice, context=None):
         "Informações de exportação"
@@ -704,7 +726,12 @@ class NFe310(NFe200):
             id_dest = '2'
         if inv.partner_id.country_id.id != \
            inv.company_id.country_id.id:
-            id_dest = '3'
+            # RAFAEL PETRELLA - 09/02/17
+            if inv.ind_pres == '1':
+              id_dest = '1'
+            else:
+              id_dest = '3'
+
         self.nfe.infNFe.ide.idDest.valor = id_dest
         self.nfe.infNFe.ide.indFinal.valor = inv.ind_final or ''
         self.nfe.infNFe.ide.indPres.valor = inv.ind_pres or ''
