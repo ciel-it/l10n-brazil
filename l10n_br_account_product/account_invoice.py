@@ -103,8 +103,8 @@ class AccountInvoice(models.Model):
     nfe_code = fields.Char(string="Código Numérico", size=8, readonly=True,
                            compute='_compute_nfe_code', store=True)
     nfe_version = fields.Selection(
-        [('1.10', '1.10'), ('2.00', '2.00'), ('3.10', '3.10')],
-        u'Versão NFe', readonly=True,
+        [('1.10', '1.10'), ('2.00', '2.00'), ('3.10', '3.10'), ('CTe 4.00', 'CTe 4.00')],
+        u'Versão NFe/CTe', readonly=True,
         states={'draft': [('readonly', False)]}, required=True)
     date_hour_invoice = fields.Datetime(
         u'Data e hora de emissão', readonly=True,
@@ -181,8 +181,8 @@ class AccountInvoice(models.Model):
         states={'draft': [('readonly', False)]}, track_visibility='onchange')
     nfe_status = fields.Char('Status na Sefaz', size=44, readonly=True,
                              track_visibility='onchange')
-    nfe_date = fields.Datetime('Data do Status NFE', readonly=True)
-    nfe_export_date = fields.Datetime(u'Exportação NFE', readonly=True)
+    nfe_date = fields.Datetime('Data do Status NFE/CTE', readonly=True)
+    nfe_export_date = fields.Datetime(u'Exportação NFE/CTE', readonly=True)
     cfop_ids = fields.Many2many('l10n_br_account_product.cfop', string='CFOP',
                                 compute='_get_cfops')
     fiscal_document_related_ids = fields.One2many(
@@ -840,6 +840,20 @@ class AccountInvoiceLine(models.Model):
         tax_codes = fiscal_position.with_context(ctx).map_tax_code(
             product_id, fiscal_position, company_id=company_id,
             tax_ids=taxes)
+
+	# RAFAEL PETRELLA - 21/04/17
+	# Criado regra para troca de CFOP quando houver ST
+        if tax_codes.get('icmsst', False):
+		taxcode_cfop = tax_codes.get('icmsst')
+                
+		envtax = self.env['account.tax.code']
+                taxcode_code = envtax.search([('id', '=', taxcode_cfop)], limit=1)
+
+		envcfop = self.env['l10n_br_account_product.cfop']
+		cfop = envcfop.search([('code', '=', taxcode_code.code)], limit=1)
+		
+		if cfop:
+                	result['cfop_id'] = cfop.id
 
         if tax_codes.get('icms', False):
             result['icms_cst_id'] = tax_codes.get('icms')

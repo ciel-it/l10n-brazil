@@ -27,6 +27,15 @@ from openerp.osv import orm
 from openerp.tools.translate import _
 from openerp.addons.l10n_br_account.sped.document import FiscalDocument
 
+class CTe300(FiscalDocument):
+
+    def __init__(self):
+        super(CTe200, self).__init__()
+        self.nfe = None
+        self.nfref = None
+        self.det = None
+        self.dup = None
+
 class NFe200(FiscalDocument):
 
     def __init__(self):

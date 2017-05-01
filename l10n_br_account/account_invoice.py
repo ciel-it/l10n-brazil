@@ -510,6 +510,7 @@ class AccountInvoiceLine(models.Model):
                 result['value'].get('fiscal_position', False))
             result['value'][
                 'cfop_id'] = obj_fp.cfop_id and obj_fp.cfop_id.id or False
+
             if kwargs.get('product_id', False):
                 obj_product = self.env['product.product'].browse(
                     kwargs.get('product_id', False))
@@ -530,6 +531,7 @@ class AccountInvoiceLine(models.Model):
                                            False)).tax_ids or False)
                 tax_ids = obj_fp.map_tax(taxes).ids
                 result['value']['invoice_line_tax_id'] = tax_ids
+
                 result['value'].update(
                     self._get_tax_codes(kwargs.get('product_id'), obj_fp,
                                         tax_ids, kwargs.get('company_id')))

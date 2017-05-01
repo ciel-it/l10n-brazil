@@ -189,10 +189,23 @@ class SaleOrder(orm.Model):
     @api.multi
     def onchange_address_id(self, partner_invoice_id, partner_shipping_id,
                             partner_id, company_id, **kwargs):
-        fiscal_category_id=self._context.get('fiscal_category_id')
-        return super(SaleOrder, self).onchange_address_id(
+	fiscal_category_id=self._context.get('fiscal_category_id')
+	res = super(SaleOrder, self).onchange_address_id(
             partner_invoice_id, partner_shipping_id, partner_id, company_id,
             fiscal_category_id=fiscal_category_id)
+
+	warning_msgs = ''
+        part = self.env['res.partner'].browse(partner_id)
+	if part and part.comment:
+		warning_msgs = part.comment + '\n'
+
+	if warning_msgs:
+		warning = {
+                       'title': _('Aviso!'),
+                       'message' : warning_msgs
+                    }
+		res.update({'warning': warning})        
+	return res
 
     @api.model
     def _fiscal_position_map(self, result, context=None, **kwargs):        
@@ -230,6 +243,11 @@ class SaleOrder(orm.Model):
     def _fiscal_comment(self, cr, uid, order, context=None):
         fp_comment = []
         fp_ids = []
+
+	if order and \
+        order.partner_id and \
+        order.partner_id.invoice_comment:
+		fp_comment.append(order.partner_id.invoice_comment)
 
         for line in order.order_line:
             if line.fiscal_position and \
@@ -286,7 +304,6 @@ class SaleOrder(orm.Model):
         result['fiscal_category_id'] = fiscal_category_id
 
         return result
-
 
 class SaleOrderLine(orm.Model):
     _inherit = 'sale.order.line'

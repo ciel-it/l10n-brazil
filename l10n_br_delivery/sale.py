@@ -42,6 +42,8 @@ class SaleOrder(orm.Model):
         if order.carrier_id:
             result['carrier_id'] = order.carrier_id.id
 
+	result['partner_carrier_id'] = order.partner_id.partner_carrier_id.id
+
         return result
 
     def _prepare_order_picking(self, cr, uid, order, context=None):

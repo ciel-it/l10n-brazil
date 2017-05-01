@@ -375,6 +375,12 @@ class ResPartner(models.Model):
         domain="[('is_company', '=', is_company)]",
         default=_default_partner_fiscal_type_id)
 
+    partner_carrier_id = fields.Many2one(
+        'res.partner', string='Transportadora',
+        domain="[('is_carrier','=','True')]")
+
+    invoice_comment = fields.Text('Invoice Comment')
+
     @api.onchange('is_company')
     def _onchange_is_company(self):           
         ft_id = self._default_partner_fiscal_type_id()
