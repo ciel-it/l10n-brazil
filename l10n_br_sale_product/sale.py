@@ -20,7 +20,6 @@
 from openerp.osv import orm, fields
 from openerp.addons import decimal_precision as dp
 
-
 def  calc_price_ratio(price_gross, amount_calc, amount_total):
     return price_gross * amount_calc / amount_total
 
@@ -279,6 +278,22 @@ class SaleOrder(orm.Model):
 class SaleOrderLine(orm.Model):
     _inherit = 'sale.order.line'
 
+    def invoice_line_create(self, cr, uid, ids, context=None):
+
+        result = super(SaleOrderLine, self).invoice_line_create(
+            cr, uid, ids, context)
+
+	# RAFAEL PETRELLA 01/05/2017
+	# Codigo criado para que seja disparado o calculo da troca da CFOP
+	# Devido a OB nao é possivel acessar o metodo direto daqui por isso foi alterado a
+        # fiscal category, assim o código é disparado por cascata
+	inv_line_pool = self.pool.get('account.invoice.line')
+	inv_line_ids = inv_line_pool.search(cr, uid, [('id','in',result)])
+        for inv_line in inv_line_pool.browse(cr, uid, inv_line_ids, context):
+            inv_line.write({'fiscal_category_id':inv_line.fiscal_category_id.id})
+
+	return result 
+
     def _amount_line(self, cr, uid, ids, field_name, arg, context=None):
         tax_obj = self.pool.get('account.tax')
         cur_obj = self.pool.get('res.currency')
@@ -359,4 +374,5 @@ class SaleOrderLine(orm.Model):
                 if type(fp_id) is int:
                     fp_id = self.pool['account.fiscal.position'].browse(cr, uid, fp_id, context) 
                 result['cfop_id'] = fp_id.cfop_id.id
+
         return result
