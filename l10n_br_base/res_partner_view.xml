@@ -8,6 +8,10 @@
 			<field name="model">res.partner</field>
 			<field name="inherit_id" ref="base.view_res_partner_filter" />
 			<field name="arch" type="xml">
+                                <field name="name" position="after">
+                                        <field name="legal_name" />
+                                        <field name="id" />
+                                </field>
 				<field name="name" position="after">
 					<field name="cnpj_cpf" />
 				</field>
@@ -19,6 +23,9 @@
 			<field name="model">res.partner</field>
 			<field name="inherit_id" ref="base.view_partner_tree" />
 			<field name="arch" type="xml">
+                                <field name="display_name" position="before">
+                                        <field name="id" />
+                                </field>
 				<field name="display_name" position="after">
 					<field name="cnpj_cpf" />
 					<field name="inscr_est" />
@@ -75,6 +82,9 @@
 		                <field name="zip" position="attributes">
                 		    <attribute name="style">width: 50%</attribute>
 		                </field>
+                                <field name="title" position="after">
+					<field name="id"/>
+                                </field>
 				<notebook>
 					<page position="inside" string="Outros Dados">
 						<group string="Dados Fiscais">

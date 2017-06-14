@@ -146,6 +146,7 @@
 			<field name="arch" type="xml">
 				<field name="suframa" position="after">
 					<field name="partner_fiscal_type_id" required="1"/>
+                                        <field name="freight_responsibility"/>
                                         <field name="partner_carrier_id"/>
 				</field>
 				<page name="internal_notes" string="Internal Notes" position="after">

@@ -42,7 +42,16 @@ class AccountInvoice(models.Model):
     @api.one
     @api.depends('invoice_line.price_subtotal', 'tax_line.amount')
     def _compute_amount(self):
+
+        self.weight_net = 0.00
+        self.weight = 0.00
         for line in self.invoice_line:
+
+            # RAFAEL PETRELLA - Regra para calculo do peso da nota fiscal
+            if line.product_id:
+                self.weight_net += line.product_id.weight_net * line.quantity
+                self.weight += line.product_id.weight * line.quantity
+
             self.amount_untaxed += line.price_total
             if line.icms_cst_id.code not in ('101','102','201','202','300','500'):
                 self.icms_base += line.icms_base

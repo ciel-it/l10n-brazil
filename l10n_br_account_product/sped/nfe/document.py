@@ -156,7 +156,7 @@ class NFe200(FiscalDocument):
         self.nfe.infNFe.ide.tpAmb.valor = nfe_environment
         self.nfe.infNFe.ide.finNFe.valor = inv.nfe_purpose
         self.nfe.infNFe.ide.procEmi.valor = 0
-        self.nfe.infNFe.ide.verProc.valor = 'Odoo Brasil 8.0'
+        self.nfe.infNFe.ide.verProc.valor = 'SIGAPME 8.0'
 
         if inv.cfop_ids[0].type in ("input"):
             self.nfe.infNFe.ide.tpNF.valor = '0'
@@ -204,7 +204,7 @@ class NFe200(FiscalDocument):
             self.nfref.refNF.serie.valor = inv_related.serie or ''
             self.nfref.refNF.nNF.valor = inv_related.internal_number or ''
             info = u'NFe Ref: Série: {0} Número: {1} Emitida em: {2}|'.format(inv_related.serie,
-                    inv_related.internal_number, inv_related.date)
+                    inv_related.internal_number, datetime.strptime(inv_related.date, '%Y-%m-%d').strftime('%d-%m-%Y'))
             self.nfe.infNFe.infAdic.infCpl.valor = self.nfe.infNFe.infAdic.infCpl.valor + info
 
         elif inv_related.document_type == 'nfrural':
@@ -227,8 +227,8 @@ class NFe200(FiscalDocument):
         elif inv_related.document_type == 'nfe':
             self.nfref.refNFe.valor = inv_related.access_key or ''
             nfe_key = inv_related.access_key
-            info = u'NFe Ref: Serie: {0} Número: {1} Emitida em: {2} - {3}|'.format(
-                    nfe_key[22:25], nfe_key[25:34], nfe_key[2:6], nfe_key)
+            info = u'NFe Ref: Serie: {0} Número: {1} Emitida em: {2}/20{3} - {4}|'.format(
+                    nfe_key[22:25], nfe_key[25:34], nfe_key[4:6], nfe_key[2:4], nfe_key)
             self.nfe.infNFe.infAdic.infCpl.valor = self.nfe.infNFe.infAdic.infCpl.valor + info
 
 
@@ -576,8 +576,10 @@ class NFe200(FiscalDocument):
         self.vol.esp.valor = inv.kind_of_packages or ''
         self.vol.marca.valor = inv.brand_of_packages or ''
         self.vol.nVol.valor = inv.notation_of_packages or ''
-        self.vol.pesoL.valor = str("%.2f" % inv.weight)
-        self.vol.pesoB.valor = str("%.2f" % inv.weight_net)
+	# RAFAEL PETRELLA - 06/05/2017
+	# Ajustado peso liquido e bruto
+        self.vol.pesoL.valor = str("%.2f" % inv.weight_net)
+        self.vol.pesoB.valor = str("%.2f" % inv.weight)
 
 
     def _purchase_information(self, cr, uid, ids, inv, context=None):
@@ -606,6 +608,10 @@ class NFe200(FiscalDocument):
 
         self.nfe.infNFe.infAdic.infAdFisco.valor = inv.fiscal_comment or ''
         self.nfe.infNFe.infAdic.infCpl.valor = self.nfe.infNFe.infAdic.infCpl.valor + (inv.comment or '')
+
+	if inv.partner_id and inv.partner_id.partner_fiscal_type_id and inv.partner_id.partner_fiscal_type_id.code != "Simples Nacional" and inv.company_id and inv.company_id.fiscal_type <> 3 and inv.nfe_purpose == '1' and inv.company_id.annual_revenue > 0.00:
+            info = u' * Permite o aproveitamento de crédito de ICMS no valor de R$ %.2f correspondente a aliquota de %.2f nos termos do artigo 23 da LC 123/2006 ' % ((inv.amount_total * inv.company_id.annual_revenue / 100.00),inv.company_id.annual_revenue)
+            self.nfe.infNFe.infAdic.infCpl.valor = self.nfe.infNFe.infAdic.infCpl.valor + info
 
     def _total(self, cr, uid, ids, inv, total_tax, context=None):
 

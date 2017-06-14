@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
 	<data>
-
 		<record id="view_l10n_br_account_invoice_form" model="ir.ui.view">
 			<field name="name">l10n_br_account.invoice.form</field>
 			<field name="model">account.invoice</field>
@@ -107,6 +106,11 @@
 			<field name="model">account.invoice</field>
 			<field name="inherit_id" ref="account.invoice_supplier_form" />
 			<field name="arch" type="xml">
+<data>
+<button name="invoice_cancel" position="before">
+<button name="action_invoice_sent" type="object" string="Send by Email" groups="base.group_user"/>
+</button>
+</data>
 				<page string="Payments" position="before">
 					<page string="Vencimentos">
 						<field colspan="4" nolabel="1" name="move_line_receivable_id">

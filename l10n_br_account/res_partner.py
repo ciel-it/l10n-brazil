@@ -381,6 +381,14 @@ class ResPartner(models.Model):
 
     invoice_comment = fields.Text('Invoice Comment')
 
+    freight_responsibility = fields.Selection(
+        selection=[('0', u'Emitente'),
+                   ('1', u'Destinatário'),
+                   ('2', u'Terceiros'),
+                   ('9', u'Sem Frete')],
+        string=u'Frete por Conta',
+        required=True, default='9')
+
     @api.onchange('is_company')
     def _onchange_is_company(self):           
         ft_id = self._default_partner_fiscal_type_id()

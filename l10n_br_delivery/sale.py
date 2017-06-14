@@ -45,6 +45,23 @@ class SaleOrder(orm.Model):
 	if order.partner_id and order.partner_id.partner_carrier_id:
             result['partner_carrier_id'] = order.partner_id.partner_carrier_id.id
 
+        if order.partner_id and order.partner_id.freight_responsibility:
+            result['freight_responsibility'] = order.partner_id.freight_responsibility
+
+        # RAFAEL PETRELLA - Regra para calculo do peso da nota fiscal
+        invline_obj = self.pool.get('account.invoice.line')
+        weight_net = 0.00
+        weight = 0.00
+        for line_id in lines:
+            invline = invline_obj.browse(cr, uid, line_id, context=context)
+            if invline and invline.product_id:
+                weight_net += invline.product_id.weight_net * invline.quantity
+                weight += invline.product_id.weight * invline.quantity
+
+        result['weight_net'] = weight_net
+        result['weight'] = weight
+        result['number_of_packages'] = 1
+
         return result
 
     def _prepare_order_picking(self, cr, uid, order, context=None):
