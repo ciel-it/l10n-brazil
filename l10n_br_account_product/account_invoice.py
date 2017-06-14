@@ -881,7 +881,8 @@ class AccountInvoiceLine(models.Model):
         other_costs_value = values.get(
             'other_costs_value', 0.0) or self.other_costs_value
 
-        tax_ids = values.get('invoice_line_tax_id', [[6, 0, []]])[0][2] or \
+        line_taxes = values.get('invoice_line_tax_id', [[6, 0, []]])
+        tax_ids = line_taxes and line_taxes[0][2] or \
             self.invoice_line_tax_id.ids
 
         partner_id = values.get('partner_id') or self.partner_id.id

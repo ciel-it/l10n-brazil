@@ -276,8 +276,7 @@ class AccountTax(models.Model):
             result_icmsst['taxes'][0]['icms_st_percent_reduction'] = icms_st_percent_reduction
             result_icmsst['taxes'][0]['icms_st_base_other'] = icms_st_base_other
 
-            if result_icmsst['taxes'][0]['amount_mva']:
-                calculed_taxes += result_icmsst['taxes']
+            calculed_taxes += result_icmsst['taxes']
 
         costs, costs_values = self._compute_costs(cr, uid, insurance_value, freight_value, other_costs_value)
         calculed_taxes += costs
