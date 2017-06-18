@@ -109,17 +109,20 @@ class SaleOrder(orm.Model):
             'amount_costs': 'other_costs_value',
         }
         for order in self.browse(cr, uid, ids, context=context):
+            amount = 0
             for line in order.order_line:
-                if not line.order_id.amount_gross:
+                if line.product_id.fiscal_type == 'product':
+                    amount += line.price_gross
+            for line in order.order_line:
+                if not line.order_id.amount_gross or line.product_id.fiscal_type == 'service':
                     continue
                 line_obj.write(cr, uid, line.id, {
                     write[name]: calc_price_ratio(
                         line.price_gross,
                         value,
-                        line.order_id.amount_gross),
+                        amount),
                     }, context=context)
         return True
-
 
     _columns = {
         'amount_freight': fields.function(
@@ -372,7 +375,7 @@ class SaleOrderLine(orm.Model):
             fp_id = line.fiscal_position or result.get('fiscal_position', False) or False
             if fp_id:
                 if type(fp_id) is int:
-                    fp_id = self.pool['account.fiscal.position'].browse(cr, uid, fp_id, context) 
+                    fp_id = self.pool['account.fiscal.position'].browse(cr, uid, fp_id, context)
                 result['cfop_id'] = fp_id.cfop_id.id
 
         return result
