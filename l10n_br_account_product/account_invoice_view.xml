@@ -321,6 +321,9 @@
 										<field name="freight_value"/>
 										<field name="insurance_value"/>
 										<field name="other_costs_value"/>
+                                                                                <field name="pedcomp"/>
+                                                                                <field name="itempedcomp"/>
+                                                                                <field name="infoadprod"/>
 									</group>
 									<group>
 										<field name="product_type" attrs="{'readonly': [('product_id','!=', False)]}"/>

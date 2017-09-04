@@ -45,6 +45,10 @@
                     <group string="Dados Fiscais de Importação">
                         <field name="fci"/>
                     </group>
+                    <group string="Dados Fiscais de Exportação">
+                        <field name="uom_comex_id"/>
+                        <field name="uom_comex_factor"/>
+                    </group>
 				</field>
 			</field>
 		</record>

@@ -348,6 +348,9 @@ class NFe200(FiscalDocument):
         self.det.prod.CEST.valor = re.sub('[^0-9]', '', inv_line.cest or '')
         self.det.prod.EXTIPI.valor = ''
         self.det.prod.nFCI.valor = inv_line.fci or ''
+	self.det.prod.xPed.valor = inv_line.pedcomp or ''
+	self.det.prod.nItemPed.valor = inv_line.itempedcomp or ''
+	self.det.infAdProd.valor = inv_line.infoadprod or ''
         self.det.prod.CFOP.valor = inv_line.cfop_id.code
         self.det.prod.uCom.valor = inv_line.uos_id.name or ''
         self.det.prod.qCom.valor = str("%.4f" % inv_line.quantity)
@@ -361,6 +364,14 @@ class NFe200(FiscalDocument):
         self.det.prod.vSeg.valor = str("%.2f" % inv_line.insurance_value)
         self.det.prod.vDesc.valor = str("%.2f" % inv_line.discount_value)
         self.det.prod.vOutro.valor = str("%.2f" % inv_line.other_costs_value)
+
+	# RAFAEL PETRELLA - 14-08-17 - Ajuste Unidade de Medida Comex
+        if inv.fiscal_position.id_dest == '3':
+                if inv_line.product_id.uom_comex_id and inv_line.product_id.uom_comex_factor:
+                        self.det.prod.uTrib.valor = inv_line.product_id.uom_comex_id.name
+                        self.det.prod.qTrib.valor = str("%.4f" % (inv_line.product_id.uom_comex_factor * inv_line.quantity))
+                        self.det.prod.vUnTrib.valor = str("%.7f" % (inv_line.price_unit / inv_line.product_id.uom_comex_factor))
+
 
         # RAFAEL PETRELLA - 10-02-17 - Ajuste para Natureza de Operação (DESCRIÇÃO)
         self.nfe.infNFe.ide.natOp.valor = inv_line.cfop_id.small_name

@@ -479,6 +479,9 @@ class AccountInvoiceLine(models.Model):
     cest = fields.Char(
         string="CEST", related='fiscal_classification_id.cest')
     fci = fields.Char('FCI do Produto', size=36)
+    pedcomp = fields.Char('Ped. Compra', size=60)
+    itempedcomp = fields.Char('Item Ped. Compra', size=60)
+    infoadprod = fields.Char('Inf. Adic. Prod', size=60)
     import_declaration_ids = fields.One2many(
         'l10n_br_account_product.import.declaration',
         'invoice_line_id', u'Declaração de Importação')

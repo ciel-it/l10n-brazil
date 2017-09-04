@@ -2,7 +2,7 @@
 "ncm_1",1,"Capítulo 1 – Animais Vivos","view",,"01.129.00"
 "ncm_0101",1.01,"Cavalos, asininos e muares, vivos.","view",,
 "ncm_01012",101.2,"Cavalos:","view","ncm_0101",
-"ncm_01012100","0101.21.00","Reprodutores de raça pura","normal","ncm_01012",
+"ncm_01012100","0101.21.00","Reprodutores","normal","ncm_01012",
 "ncm_01012900","0101.29.00","Outros","normal","ncm_01012",
 "ncm_01013000","0101.30.00","Asininos","normal","ncm_0101",
 "ncm_01019000","0101.90.00","Outros","normal","ncm_0101",
@@ -656,8 +656,7 @@
 "ncm_04090000","0409.00.00","Mel natural.","normal",,
 "ncm_04090000_01","0409.00.00:01","Acondicionado em embalagem de apresentação","extension","ncm_04090000",
 "ncm_04100000","0410.00.00","Produtos comestíveis de origem animal, não especificados nem compreendidos noutras posições.","normal",,
-"ncm_5",5,"Capítulo 5 - Outros produtos de origem animal,
-não especificados nem compreendidos noutros Capítulos","view",,
+"ncm_5",5,"Capítulo 5 - Outros produtos de origem animal, não especificados nem compreendidos noutros Capítulos","view",,
 "ncm_05010000","0501.00.00","Cabelos em bruto, mesmo lavados ou desengordurados; desperdícios de cabelo.","normal",,
 "ncm_0502",5.02,"Cerdas de porco ou de javali; pelos de texugo e outros pelos para escovas, pincéis e artigos semelhantes; desperdícios destas cerdas e pelos.","view",,
 "ncm_050210",502.1,"Cerdas de porco ou de javali e seus desperdícios","view",,
@@ -1864,8 +1863,7 @@ não especificados nem compreendidos noutros Capítulos","view",,
 "ncm_22082000","2208.20.00","Aguardentes de vinho ou de bagaço de uvas","normal",,"02.025.00"
 "ncm_220830",2208.3,"Uísques","view",,"02.025.00"
 "ncm_22083010","2208.30.10","Com um teor alcoólico, em volume, superior a 50 % vol, em recipientes de capacidade superior ou igual a 50 l","normal",,"02.025.00"
-"ncm_22083010_01","2208.30.10:01","Destilado alcoólico chamado uísque de malte (""malt Whisky"") com teor
-alcoólico em volume superior a 54% e inferior a 70%, obtido de cevada maltada","extension","ncm_22083010","02.025.00"
+"ncm_22083010_01","2208.30.10:01","Destilado alcoólico chamado uísque de malte (""malt Whisky"") com teor alcoólico em volume superior a 54% e inferior a 70%, obtido de cevada maltada","extension","ncm_22083010","02.025.00"
 "ncm_22083010_02","2208.30.10:02","Destilado alcoólico chamado uísque de cereais (""grain Whisky"") com teor alcoólico em volume superior a 54% e inferior a 70%, obtido de cereal não maltado adicionado ou não de cevada maltada","extension","ncm_22083010","02.025.00"
 "ncm_22083020","2208.30.20","Em embalagens de capacidade inferior ou igual a 2 l","normal",,"02.025.00"
 "ncm_22083090","2208.30.90","Outros","normal",,"02.025.00"
@@ -2270,8 +2268,7 @@ alcoólico em volume superior a 54% e inferior a 70%, obtido de cevada maltada",
 "ncm_27149000","2714.90.00","Outros","normal",,
 "ncm_27150000","2715.00.00","Misturas betuminosas à base de asfalto ou de betume naturais, de betume de petróleo, de alcatrão mineral ou de breu de alcatrão mineral (por exemplo, mástiques betuminosos e cut-backs).","normal",,
 "ncm_27160000","2716.00.00","Energia elétrica.","normal",,"07.001.00"
-"ncm_28",28,"Capítulo 28 - Produtos químicos inorgânicos; compostos inorgânicos ou orgânicos de metais preciosos,
-de elementos radioativos, de metais das terras raras ou de isótopos","view",,
+"ncm_28",28,"Capítulo 28 - Produtos químicos inorgânicos; compostos inorgânicos ou orgânicos de metais preciosos, de elementos radioativos, de metais das terras raras ou de isótopos","view",,
 "ncm_2801",28.01,"Flúor, cloro, bromo e iodo.","view",,
 "ncm_28011000","2801.10.00","Cloro","normal",,
 "ncm_280120",2801.2,"Iodo","view",,

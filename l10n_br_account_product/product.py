@@ -44,6 +44,8 @@ class ProductTemplate(orm.Model):
         'origin': fields.selection(PRODUCT_ORIGIN, 'Origem'),
         'ncm_id': fields.many2one('account.product.fiscal.classification', u'NCM'),
         'fci': fields.char('FCI do Produto', size=36),
+	'uom_comex_id': fields.many2one('product.uom', 'Comex Unit of Measure', required=False, help="Default Unit of Measure used for comex" ),
+	'uom_comex_factor': fields.float('Comex Factor', required=False),
     }
     _defaults = {
         'fiscal_type': PRODUCT_FISCAL_TYPE_DEFAULT,
