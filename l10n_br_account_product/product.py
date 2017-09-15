@@ -24,6 +24,8 @@ from .l10n_br_account_product import (
     PRODUCT_FISCAL_TYPE,
     PRODUCT_FISCAL_TYPE_DEFAULT)
 
+from openerp.addons import decimal_precision as dp
+
 PRODUCT_ORIGIN = [
     ('0', u'0 - Nacional, exceto as indicadas nos códigos 3 a 5'),
     ('1', u'1 - Estrangeira - Importação direta, exceto a indicada no código 6'),
@@ -45,7 +47,7 @@ class ProductTemplate(orm.Model):
         'ncm_id': fields.many2one('account.product.fiscal.classification', u'NCM'),
         'fci': fields.char('FCI do Produto', size=36),
 	'uom_comex_id': fields.many2one('product.uom', 'Comex Unit of Measure', required=False, help="Default Unit of Measure used for comex" ),
-	'uom_comex_factor': fields.float('Comex Factor', required=False),
+	'uom_comex_factor': fields.float('Comex Factor', required=False, digits_compute=dp.get_precision('Comex')),
     }
     _defaults = {
         'fiscal_type': PRODUCT_FISCAL_TYPE_DEFAULT,
