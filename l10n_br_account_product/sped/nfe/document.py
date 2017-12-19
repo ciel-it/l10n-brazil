@@ -362,11 +362,17 @@ class NFe200(FiscalDocument):
         self.det.prod.vUnTrib.valor = self.det.prod.vUnCom.valor
         self.det.prod.vFrete.valor = str("%.2f" % inv_line.freight_value)
         self.det.prod.vSeg.valor = str("%.2f" % inv_line.insurance_value)
-        self.det.prod.vDesc.valor = str("%.2f" % inv_line.discount_value)
+
+	# RAFAEL PETRELLA - 14-12-17 - tratativa erro desconto negativo
+	if inv_line.discount_value < 0.00:
+	        self.det.prod.vDesc.valor = str("%.2f" % 0.00)
+	else:
+        	self.det.prod.vDesc.valor = str("%.2f" % inv_line.discount_value)
+
         self.det.prod.vOutro.valor = str("%.2f" % inv_line.other_costs_value)
 
 	# RAFAEL PETRELLA - 14-08-17 - Ajuste Unidade de Medida Comex
-        if inv.fiscal_position.id_dest == '3':
+        if inv.fiscal_position.id_dest == '3' or inv.fiscal_position.cfop_id.code == '6501':
                 if inv_line.product_id.uom_comex_id and inv_line.product_id.uom_comex_factor:
                         self.det.prod.uTrib.valor = inv_line.product_id.uom_comex_id.name
                         self.det.prod.qTrib.valor = str("%.4f" % (inv_line.product_id.uom_comex_factor * inv_line.quantity))
@@ -645,7 +651,13 @@ class NFe200(FiscalDocument):
         self.nfe.infNFe.total.ICMSTot.vProd.valor = str("%.2f" % inv.amount_gross)
         self.nfe.infNFe.total.ICMSTot.vFrete.valor = str("%.2f" % inv.amount_freight)
         self.nfe.infNFe.total.ICMSTot.vSeg.valor = str("%.2f" % inv.amount_insurance)
-        self.nfe.infNFe.total.ICMSTot.vDesc.valor = str("%.2f" % inv.amount_discount)
+
+        # RAFAEL PETRELLA - 14-12-17 - tratativa erro desconto negativo
+        if inv.amount_discount < 0.00:
+        	self.nfe.infNFe.total.ICMSTot.vDesc.valor = str("%.2f" % 0.00)
+	else:
+	        self.nfe.infNFe.total.ICMSTot.vDesc.valor = str("%.2f" % inv.amount_discount)
+
         self.nfe.infNFe.total.ICMSTot.vII.valor = str("%.2f" % inv.ii_value)
         self.nfe.infNFe.total.ICMSTot.vIPI.valor = str("%.2f" % inv.ipi_value)
         self.nfe.infNFe.total.ICMSTot.vPIS.valor = str("%.2f" % inv.pis_value)
