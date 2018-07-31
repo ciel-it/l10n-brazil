@@ -19,18 +19,22 @@
 
 from ..document import NFe200
 from ..document import NFe310
+from ..document import NFe400
 from ..document import CTe300
 
 def nfe_export(cr, uid, ids, nfe_environment='1',
                 nfe_version='2.00', context=None):
 
-    if nfe_version == '3.10':
-        NFe = NFe310()
+    if nfe_version == '4.00':
+        NFe = NFe400()
     else:
-        if nfe_version == 'CTe 3.00':
-            NFe = CTe104()
+        if nfe_version == '3.10':
+            NFe = NFe310()
         else:
-            NFe = NFe200()
+            if nfe_version == 'CTe 3.00':
+                NFe = CTe104()
+            else:
+                NFe = NFe200()
 
     nfes = NFe.get_xml(cr, uid, ids, nfe_environment, context)
 

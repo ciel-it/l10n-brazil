@@ -75,7 +75,7 @@ class NFe200(FiscalDocument):
 
             total_tax = 0.0
             for line in inv.tax_line:
-                if line.tax_code_id.domain not in ('freight', 'insurance', 'other_costs'):
+                if line.tax_code_id.domain not in ('freight', 'frete', 'insurance', 'seguro', 'other_costs'):
                     total_tax += line.amount
             i = 0
             remaining = Decimal(str("%.2f" % total_tax))
@@ -426,7 +426,7 @@ class NFe200(FiscalDocument):
                 if inv_line.icms_origin in ('1', '2', '3', '8'):
                     perc_default = 4
                 self.det.imposto.ICMSUFDest.pICMSInter.valor = str("%.2f" % (inv_line.pICMSInter or perc_default))
-                self.det.imposto.ICMSUFDest.pICMSInterPart.valor = str("%.2f" % (inv_line.pICMSInterPart or 60))
+                self.det.imposto.ICMSUFDest.pICMSInterPart.valor = str("%.2f" % (inv_line.pICMSInterPart or 80))
                 self.det.imposto.ICMSUFDest.vFCPUFDest.valor = str("%.2f" % inv_line.vFCPUFDest)
                 self.det.imposto.ICMSUFDest.vICMSUFDest.valor = str("%.2f" % inv_line.vICMSUFDest)
                 self.det.imposto.ICMSUFDest.vICMSUFRemet.valor = str("%.2f" % inv_line.vICMSUFRemet)
@@ -824,3 +824,8 @@ class NFe310(NFe200):
             raise orm.except_orm(_(u'Erro!'), _(u"Biblioteca PySPED não instalada!"))
 
         return Dup_310()
+
+class NFe400(NFe310):
+
+    def __init__(self):
+        super(NFe400, self).__init__()
