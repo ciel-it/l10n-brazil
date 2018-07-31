@@ -832,7 +832,7 @@ class NFe400(NFe310):
         self.detPag = None
 
     def _serializer(self, cr, uid, ids, nfe_environment, context=None):
-        super(NFe400, self)_serializer(cr, uid, ids, nfe_environment, context)
+        super(NFe400, self)._serializer(cr, uid, ids, nfe_environment, context)
         pool = pooler.get_pool(cr.dbname)
         if not context:
             context = {'lang': 'pt_BR'}
