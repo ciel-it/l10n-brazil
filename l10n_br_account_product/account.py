@@ -28,9 +28,23 @@ class AccountPaymentTerm(orm.Model):
         'indPag': fields.selection(
             [('0', u'Pagamento à Vista'), ('1', u'Pagamento à Prazo'),
             ('2', 'Outros')], 'Indicador de Pagamento'),
+        'tPag': fields.selection(
+            [('01', u'Dinheiro'),
+             ('02', u'Cheque'),
+             ('03', u'Cartão de Crédito'),
+             ('04',u'Cartão de Débito'),
+             ('05', u'Crédito Loja'),
+             ('10', u'Vale Alimentação'),
+             ('11', u'Vale Refeição'),
+             ('12', u'Vale Presente'),
+             ('13', u'Vale Combustivel'),
+             ('15', u'Boleto Bancário'),
+             ('90', u'Sem Pagamento'),
+             ('99', u'Outros')], 'Meio de Pagamento'),
     }
     _defaults = {
         'indPag': '1',
+        'tPag': '99',
     }
 
 
