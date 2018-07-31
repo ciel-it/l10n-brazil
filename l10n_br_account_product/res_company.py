@@ -46,7 +46,7 @@ class ResCompany(orm.Model):
             domain="[('company_id', '=', active_id),('active','=',True),"
             "('fiscal_type','=','product')]"),
         'nfe_version': fields.selection(
-            [('1.10', '1.10'), ('2.00', '2.00'), ('3.10', '3.10'), ('CTe 3.00', 'CTe 3.00')], 'Versão NFe/CTe', required=True),
+            [('1.10', '1.10'), ('2.00', '2.00'), ('3.10', '3.10'), ('4.00', '4.00'), ('CTe 3.00', 'CTe 3.00')], 'Versão NFe/CTe', required=True),
         'nfe_import_folder': fields.char('Pasta de Importação', size=254),
         'nfe_export_folder': fields.char('Pasta de Exportação', size=254),
         'nfe_backup_folder': fields.char('Pasta de Backup', size=254),
