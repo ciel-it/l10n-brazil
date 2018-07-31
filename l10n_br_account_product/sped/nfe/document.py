@@ -144,7 +144,7 @@ class NFe200(FiscalDocument):
         self.nfe.infNFe.ide.natOp.valor = inv.fiscal_category_id.name or ''
         # RAFAEL PETRELLA - 10-02-17 - Ajuste para Natureza de Operação (DESCRIÇÃO)
         # self.nfe.infNFe.ide.natOp.valor = inv_line.cfop_id.small_name
-        self.nfe.infNFe.ide.indPag.valor = inv.payment_term and inv.payment_term.indPag or '2'
+        # self.nfe.infNFe.ide.indPag.valor = inv.payment_term and inv.payment_term.indPag or '2'
         self.nfe.infNFe.ide.mod.valor  = inv.fiscal_document_id.code or ''
         self.nfe.infNFe.ide.serie.valor = inv.document_serie_id.code or ''
         self.nfe.infNFe.ide.nNF.valor = inv.internal_number or ''
@@ -829,6 +829,44 @@ class NFe400(NFe310):
 
     def __init__(self):
         super(NFe400, self).__init__()
+        self.detPag = None
+
+    def _serializer(self, cr, uid, ids, nfe_environment, context=None):
+        super(NFe400, self)_serializer(cr, uid, ids, nfe_environment, context)
+        pool = pooler.get_pool(cr.dbname)
+        if not context:
+            context = {'lang': 'pt_BR'}
+
+        for inv in pool.get('account.invoice').browse(cr, uid, ids, context):
+
+            if inv.journal_id.revenue_expense:
+                for line in inv.move_line_receivable_id:
+                    self.detPag = self._get_detPag()
+                    self._encashmentpag_data(cr, uid, ids, inv, line, context)
+                    self.nfe.infNFe.pag.detPag.append(self.detPag)
+            else:
+                self.pag = self._get_detPag()
+                    self._encashmentnopag_data(cr, uid, ids, inv, line, context)
+                    self.nfe.infNFe.pag.detPag.append(self.detPag)
+
+    def _encashmentpag_data(self, cr, uid, ids, inv, line, context=None):
+
+        #
+        # Dados de Pagamento
+        #
+
+        self.detPag.indPag.valor = inv.payment_term and inv.payment_term.indPag or '2'
+        self.detPag.tPag.valor   = inv.payment_term and inv.payment_term.tPag or '99'
+        self.detPag.vPag.valor   = str("%.2f" % (line.debit or line.credit))
+
+    def _encashmentnopag_data(self, cr, uid, ids, inv, line, context=None):
+
+        #
+        # Dados de Pagamento
+        #
+
+        self.detPag.tPag.valor   = '90' # Sem Pagamento
+        self.detPag.vPag.valor   = str("%.2f" % (0.00))
 
     def get_NFe(self):
 
@@ -865,4 +903,13 @@ class NFe400(NFe310):
             raise orm.except_orm(_(u'Erro!'), _(u"Biblioteca PySPED não instalada!"))
 
         return Dup_400()
+
+    def _get_detPag(self):
+
+        try:
+            from pysped.nfe.leiaute import detPag_400
+        except ImportError:
+            raise orm.except_orm(_(u'Erro!'), _(u"Biblioteca PySPED não instalada!"))
+
+        return detPag_400()
 
