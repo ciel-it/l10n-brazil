@@ -112,7 +112,7 @@ class AccountInvoice(models.Model):
     nfe_code = fields.Char(string="Código Numérico", size=8, readonly=True,
                            compute='_compute_nfe_code', store=True)
     nfe_version = fields.Selection(
-        [('1.10', '1.10'), ('2.00', '2.00'), ('3.10', '3.10'), ('CTe 4.00', 'CTe 4.00')],
+        [('1.10', '1.10'), ('2.00', '2.00'), ('3.10', '3.10'), ('4.00', '4.00'), ('CTe 4.00', 'CTe 4.00')],
         u'Versão NFe/CTe', readonly=True,
         states={'draft': [('readonly', False)]}, required=True)
     date_hour_invoice = fields.Datetime(
