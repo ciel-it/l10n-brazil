@@ -845,9 +845,9 @@ class NFe400(NFe310):
                     self._encashmentpag_data(cr, uid, ids, inv, line, context)
                     self.nfe.infNFe.pag.detPag.append(self.detPag)
             else:
-                self.pag = self._get_detPag()
-                    self._encashmentnopag_data(cr, uid, ids, inv, line, context)
-                    self.nfe.infNFe.pag.detPag.append(self.detPag)
+                self.detPag = self._get_detPag()
+                self._encashmentnopag_data(cr, uid, ids, inv, line, context)
+                self.nfe.infNFe.pag.detPag.append(self.detPag)
 
     def _encashmentpag_data(self, cr, uid, ids, inv, line, context=None):
 
