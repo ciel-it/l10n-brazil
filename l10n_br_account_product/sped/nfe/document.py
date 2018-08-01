@@ -108,11 +108,18 @@ class NFe200(FiscalDocument):
 
                 self.nfe.infNFe.det.append(self.det)
 
+            self.nfe.infNFe.cobr.fat.nFat.valor = '001'
+            self.nfe.infNFe.cobr.fat.vOrig.valor = str("%.2f" % inv.amount_total)
+            self.nfe.infNFe.cobr.fat.vDesc.valor = str("%.2f" % 0.00)
+            self.nfe.infNFe.cobr.fat.vLiq.valor = str("%.2f" % inv.amount_total)
+
             if inv.journal_id.revenue_expense:
                 for line in inv.move_line_receivable_id:
                     self.dup = self._get_Dup()
                     self._encashment_data(cr, uid, ids, inv, line, context)
                     self.nfe.infNFe.cobr.dup.append(self.dup)
+
+            self._add_detPag(inv)
 
             try:
                 self._carrier_data(cr, uid, ids, inv, context)
@@ -134,6 +141,8 @@ class NFe200(FiscalDocument):
 
         return nfes
 
+    def _add_detPag(self, inv):
+        pass
 
     def _nfe_identification(self, cr, uid, ids, inv, company, nfe_environment, context=None):
 
@@ -523,7 +532,7 @@ class NFe200(FiscalDocument):
         # Dados de Cobrança
         #
 
-        self.dup.nDup.valor = line.name
+        self.dup.nDup.valor = str("000" + line.name.split("/")[1])[-3:]
         self.dup.dVenc.valor = line.date_maturity or inv.date_due or inv.date_invoice
         self.dup.vDup.valor = str("%.2f" % (line.debit or line.credit))
 
@@ -831,25 +840,19 @@ class NFe400(NFe310):
         super(NFe400, self).__init__()
         self.detPag = None
 
-    def _serializer(self, cr, uid, ids, nfe_environment, context=None):
-        super(NFe400, self)._serializer(cr, uid, ids, nfe_environment, context)
-        pool = pooler.get_pool(cr.dbname)
-        if not context:
-            context = {'lang': 'pt_BR'}
-
-        for inv in pool.get('account.invoice').browse(cr, uid, ids, context):
-
-            if inv.journal_id.revenue_expense:
-                for line in inv.move_line_receivable_id:
-                    self.detPag = self._get_detPag()
-                    self._encashmentpag_data(cr, uid, ids, inv, line, context)
-                    self.nfe.infNFe.pag.detPag.append(self.detPag)
-            else:
+    def _add_detPag(self, inv):
+        super(NFe400, self)._add_detPag(inv)
+        if inv.journal_id.revenue_expense:
+            for line in inv.move_line_receivable_id:
                 self.detPag = self._get_detPag()
-                self._encashmentnopag_data(cr, uid, ids, inv, line, context)
+                self._encashmentpag_data(inv,line)
                 self.nfe.infNFe.pag.detPag.append(self.detPag)
+        else:
+            self.detPag = self._get_detPag()
+            self._encashmentnopag_data(inv)
+            self.nfe.infNFe.pag.detPag.append(self.detPag)
 
-    def _encashmentpag_data(self, cr, uid, ids, inv, line, context=None):
+    def _encashmentpag_data(self, inv, line):
 
         #
         # Dados de Pagamento
@@ -859,7 +862,7 @@ class NFe400(NFe310):
         self.detPag.tPag.valor   = inv.payment_term and inv.payment_term.tPag or '99'
         self.detPag.vPag.valor   = str("%.2f" % (line.debit or line.credit))
 
-    def _encashmentnopag_data(self, cr, uid, ids, inv, line, context=None):
+    def _encashmentnopag_data(self, inv):
 
         #
         # Dados de Pagamento
