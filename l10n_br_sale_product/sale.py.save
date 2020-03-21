@@ -292,9 +292,8 @@ class SaleOrder(orm.Model):
         # Codigo criado para que seja disparado o calculo dos impostos
         inv_pool = self.pool.get('account.invoice')
         inv_ids = inv_pool.search(cr, uid, [('id','=',result)])
-        for inv_header in inv_pool.browse(cr, uid, inv_ids, context):
-            for inv_line in inv_header.invoice_line:
-                inv_line.write({'fiscal_category_id':inv_line.fiscal_category_id.id})
+        for inv_line in inv_pool.browse(cr, uid, inv_ids, context):
+            inv_line.onchange_fiscal_category_id( cr, uid, inv_ids )
 
         return result
 

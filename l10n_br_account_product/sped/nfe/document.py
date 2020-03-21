@@ -27,6 +27,9 @@ from openerp.osv import orm
 from openerp.tools.translate import _
 from openerp.addons.l10n_br_account.sped.document import FiscalDocument
 
+import logging
+_logger = logging.getLogger(__name__)
+
 class CTe300(FiscalDocument):
 
     def __init__(self):
@@ -349,7 +352,7 @@ class NFe200(FiscalDocument):
         #
         self.det.nItem.valor = i
         self.det.prod.cProd.valor = inv_line.product_id.code or ''
-        self.det.prod.cEAN.valor = inv_line.product_id.ean13 or ''
+        self.det.prod.cEAN.valor = inv_line.product_id.ean13 or 'SEM GTIN'
         # RAFAEL PETRELLA - 05/01/2017 - alterado para atender cliente CR FACAS
         # self.det.prod.xProd.valor = inv_line.product_id.name[:120] or ''
         self.det.prod.xProd.valor = inv_line.name[:120] or ''
@@ -365,7 +368,7 @@ class NFe200(FiscalDocument):
         self.det.prod.qCom.valor = str("%.4f" % inv_line.quantity)
         self.det.prod.vUnCom.valor = str("%.7f" % (inv_line.price_unit))
         self.det.prod.vProd.valor = str("%.2f" % inv_line.price_gross)
-        self.det.prod.cEANTrib.valor = inv_line.product_id.ean13 or ''
+        self.det.prod.cEANTrib.valor = inv_line.product_id.ean13 or 'SEM GTIN'
         self.det.prod.uTrib.valor = self.det.prod.uCom.valor
         self.det.prod.qTrib.valor = self.det.prod.qCom.valor
         self.det.prod.vUnTrib.valor = self.det.prod.vUnCom.valor
@@ -387,6 +390,16 @@ class NFe200(FiscalDocument):
                         self.det.prod.qTrib.valor = str("%.4f" % (inv_line.product_id.uom_comex_factor * inv_line.quantity))
                         self.det.prod.vUnTrib.valor = str("%.7f" % (inv_line.price_unit / inv_line.product_id.uom_comex_factor))
 
+        # RAFAEL PETRELLA - 04-12-18 - Ajuste para exportacao
+        _logger.info("STEP 1")
+        _logger.info(inv_line.cfop_id.code)
+        if inv_line.cfop_id.code == '7501':
+            _logger.info("STEP 2")
+            for inv_related in inv.fiscal_document_related_ids:
+                _logger.info("STEP 3")
+                self.det.prod.detExport.exportInd.nRE.valor = ''
+                self.det.prod.detExport.exportInd.chNFe.valor = inv_related.access_key
+                self.det.prod.detExport.exportInd.qExport.valor = str("%.4f" % inv_line.quantity)
 
         # RAFAEL PETRELLA - 10-02-17 - Ajuste para Natureza de Operação (DESCRIÇÃO)
         self.nfe.infNFe.ide.natOp.valor = inv_line.cfop_id.small_name
@@ -435,7 +448,7 @@ class NFe200(FiscalDocument):
                 if inv_line.icms_origin in ('1', '2', '3', '8'):
                     perc_default = 4
                 self.det.imposto.ICMSUFDest.pICMSInter.valor = str("%.2f" % (inv_line.pICMSInter or perc_default))
-                self.det.imposto.ICMSUFDest.pICMSInterPart.valor = str("%.2f" % (inv_line.pICMSInterPart or 80))
+                self.det.imposto.ICMSUFDest.pICMSInterPart.valor = str("%.2f" % (inv_line.pICMSInterPart or 100))
                 self.det.imposto.ICMSUFDest.vFCPUFDest.valor = str("%.2f" % inv_line.vFCPUFDest)
                 self.det.imposto.ICMSUFDest.vICMSUFDest.valor = str("%.2f" % inv_line.vICMSUFDest)
                 self.det.imposto.ICMSUFDest.vICMSUFRemet.valor = str("%.2f" % inv_line.vICMSUFRemet)
@@ -604,8 +617,8 @@ class NFe200(FiscalDocument):
         self.vol.nVol.valor = inv.notation_of_packages or ''
 	# RAFAEL PETRELLA - 06/05/2017
 	# Ajustado peso liquido e bruto
-        self.vol.pesoL.valor = str("%.2f" % inv.weight_net)
-        self.vol.pesoB.valor = str("%.2f" % inv.weight)
+        self.vol.pesoL.valor = str("%.3f" % inv.weight_net)
+        self.vol.pesoB.valor = str("%.3f" % inv.weight)
 
 
     def _purchase_information(self, cr, uid, ids, inv, context=None):
@@ -622,7 +635,7 @@ class NFe200(FiscalDocument):
         #
         # Informações adicionais
         #
-        if self.nfe.infNFe.ide.idDest.valor == '2' and self.nfe.infNFe.ide.indFinal.valor == '1':
+        if self.nfe.infNFe.ide.idDest.valor == '2' and self.nfe.infNFe.ide.indFinal.valor == '1' and (inv.vICMSUFRemet + inv.vICMSUFDest + inv.vFCPUFDest) > 0.00:
             info = u'VALOR DIFAL ICMS ORIGEM = {0:.2f} VALOR DIFAL ICMS DESTINO= {1:.2f} \
                     VALOR FUNDO DE POBREZA DESTINO= {2:.2f}|'.format(
                         inv.vICMSUFRemet, inv.vICMSUFDest, inv.vFCPUFDest)
@@ -869,7 +882,7 @@ class NFe400(NFe310):
         #
 
         self.detPag.tPag.valor   = '90' # Sem Pagamento
-        self.detPag.vPag.valor   = str("%.2f" % (0.00))
+        #self.detPag.vPag.valor   = str("%.2f" % (0.00))
 
     def get_NFe(self):
 

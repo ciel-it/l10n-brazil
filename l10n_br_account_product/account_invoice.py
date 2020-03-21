@@ -43,6 +43,9 @@ class AccountInvoice(models.Model):
     @api.depends('invoice_line.price_subtotal', 'tax_line.amount')
     def _compute_amount(self):
 
+        old_weight_net = self.weight_net
+        old_weight = self.weight
+
         self.weight_net = 0.00
         self.weight = 0.00
         for line in self.invoice_line:
@@ -75,6 +78,10 @@ class AccountInvoice(models.Model):
             self.vFCPUFDest += line.vFCPUFDest
             self.vICMSUFDest += line.vICMSUFDest
             self.vICMSUFRemet += line.vICMSUFRemet
+
+        if self.weight_net == 0.00:
+            self.weight = old_weight
+            self.weight_net = old_weight_net
 
         for invoice_tax in self.tax_line:
             if not invoice_tax.tax_code_id.tax_discount:
@@ -236,7 +243,7 @@ class AccountInvoice(models.Model):
         string='Base ICMS Outras', digits=dp.get_precision('Account'),
         store=True, readonly=True, compute='_compute_amount')
     icms_value = fields.Float(
-        string='Valor ICMS', digits=dp.get_precision('Account'), store=True,
+        string='Valor ICMS', digits=dp.get_precision('AccountTax'), store=True,
         readonly=True, compute='_compute_amount')
     icms_st_base = fields.Float(
         string='Base ICMS ST', digits=dp.get_precision('Account'), store=True,
@@ -291,12 +298,12 @@ class AccountInvoice(models.Model):
     amount_costs = fields.Float(
         string='Valor Outros Custos', digits=dp.get_precision('Account'),
         store=True, readonly=True, compute='_compute_amount')
-    weight = fields.Float('Gross weight', readonly=True,
+    weight = fields.Float(string='Gross weight', readonly=True,
                            states={'draft': [('readonly', False)]},
-                           help="The gross weight in Kg.",)
-    weight_net = fields.Float('Net weight', help="The net weight in Kg.",
+                           help="The gross weight in Kg.", digits=(16,3))
+    weight_net = fields.Float(string='Net weight', help="The net weight in Kg.",
                                 readonly=True,
-                                states={'draft': [('readonly', False)]})
+                                states={'draft': [('readonly', False)]}, digits=(16,3))
     number_of_packages = fields.Integer(
         'Quantidade de Volumes',  readonly=True, states={'draft': [('readonly', False)]})
     kind_of_packages = fields.Char(
@@ -515,7 +522,7 @@ class AccountInvoiceLine(models.Model):
     icms_base_other = fields.Float('Base ICMS Outras', required=True,
         digits_compute=dp.get_precision('Account'))
     icms_value = fields.Float('Valor ICMS', required=True,
-        digits_compute=dp.get_precision('Account'))
+        digits_compute=dp.get_precision('AccountTax'))
     icms_percent = fields.Float('Perc ICMS',
         digits_compute=dp.get_precision('Discount'))
     icms_percent_reduction = fields.Float(u'Perc Redução de Base ICMS',
@@ -746,7 +753,7 @@ class AccountInvoiceLine(models.Model):
         result = {
             'vBCUFDest': tax.get('total_base', 0.0),
             'pICMSInter': tax.get('percent', 0.0) * 100,
-            'pICMSInterPart': 80.0,
+            'pICMSInterPart': 100.0,
             'vICMSUFRemet': tax.get('amount', 0.0),
         }
         return result

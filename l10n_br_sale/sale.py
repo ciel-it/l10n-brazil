@@ -93,9 +93,15 @@ class SaleOrder(orm.Model):
         return result
 
     _columns = {
+
+
+        'ind_final': fields.selection(
+            [('0', u'Não'),('1', u'Consumidor final')],
+            u'Operação com Consumidor final', required=False,
+            help=u'Indica operação com Consumidor final.'),
         'fiscal_category_id': fields.many2one(
             'l10n_br_account.fiscal.category', 'Categoria Fiscal',
-            domain="""[('type', '=', 'output'), 
+            domain="""[('type', '=', 'output'),
             ('journal_type', '=', 'sale'), ('state', '=', 'approved')]""",
             readonly=True, states={'draft': [('readonly', False)]}),               
         'fiscal_position': fields.many2one(
@@ -164,6 +170,14 @@ class SaleOrder(orm.Model):
             states={'draft': [('readonly', False)]}),
     }
 
+    def _default_ind_final(self, cr, uid, context=None):
+        result = '0'
+        return result
+
+    _defaults = {
+        'ind_final': _default_ind_final,
+    }
+
     def _default_fiscal_category(self, cr, uid, context=None):
         result = False
         default_company = self.default_get(cr , uid, ["company_id"], context)
@@ -180,7 +194,7 @@ class SaleOrder(orm.Model):
     _defaults = {
         'fiscal_category_id': _default_fiscal_category,
     }
-    
+
     @api.onchange("discount_rate")
     def onchange_discount_rate(self):
         for line in self.order_line:
